@@ -1,0 +1,20 @@
+PopularityContest <-function(x, y) {
+  tweetDF <- TweetFrame(x,500)
+  tweet2DF <- TweetFrame(y,500)
+
+  sortweetDF<-tweetDF[order(as.integer(tweetDF$created)), ]
+  sortweet2DF<-tweet2DF[order(as.integer(tweet2DF$created)), ]
+
+  eventDelays<- as.integer(diff(sortweetDF$created))
+  event2Delays<- as.integer(diff(sortweet2DF$created))
+
+  a <- c(sum(eventDelays<=5))
+  b <- c(sum(event2Delays<=5))
+
+  x1 <- subset(poisson.test(x,500)$conf.int, 1)
+  y1 <- subset(poisson.test(y,500)$conf.int, 1)
+  x2 <- subset(poisson.test(x,500)$conf.int, 2)
+  y2 <- subset(poisson.test(y,500)$conf.int, 2)
+
+  barplot2(c(x/500,y/500), ci.l=c(x1,y1), ci.u=c(x2,y2),plot.ci=TRUE, names.arg=c(x,y))
+}
