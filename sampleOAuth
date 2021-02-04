@@ -1,0 +1,60 @@
+library(RCurl)
+library(XML)
+library(rjson)
+library(StatDataML)
+
+getAccessToken <- function (clientId, clientSecret, oauth_endpoint_url, verbose_flag) {
+  str <- paste(clientId, ":", clientSecret, sep="")
+  base64_str <- base64(str)[[1]]
+  print(base64_str)
+  h = basicTextGatherer()
+  curlPerform(url=pf_url,
+              httpheader=c(Authorization=paste("Basic ", base64_str, sep="")),
+              postfields=c(""), 
+              writefunction=h$update,
+              ssl.verifyhost = FALSE, ssl.verifypeer = FALSE,
+              verbose=verbose_flag)
+  print(h$value())
+  token_dat <- fromJSON(h$value())
+  print(token_dat$access_token)
+  access_token <- token_dat$access_token
+  access_token <- paste("Bearer ", access_token, sep="")
+  return (access_token);
+}
+
+getExample <- function (access_token, endpoint_url, verbose_flag) {
+  reader <- basicTextGatherer()
+  header <- basicTextGatherer()
+  
+  headerFields = c(
+    'Content-Type'="text/xml;charset=UTF-8",
+    Authorization=access_token)
+  
+  curlPerform(url=endpoint_url, 
+              httpheader=headerFields, 
+              writefunction=reader$update,
+              headerfunction=header$update,
+              ssl.verifyhost=FALSE, ssl.verifypeer=FALSE, 
+              verbose=verbose_flag)
+  
+  h = parseHTTPHeader(header$value())
+  #h$status >= 200 && h$status < 300
+  
+  print(reader$value())
+  print(header$value())
+  
+  return (reader$value());
+}
+
+clientId <- "enter id here"
+clientSecret <- "enter secret here"
+oauth_endpoint_url <- "enter oauth end point"
+endpoint_url <- "enter twitter api end point"
+verbose_flag <- TRUE
+
+access_token <- getAccessToken(clientId, clientSecret, oauth_endpoint_url, verbose_flag)
+
+example_output <- getExample(access_token, endpoint_url, verbose_flag)
+
+
+
